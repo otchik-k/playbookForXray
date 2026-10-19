@@ -1,0 +1,24 @@
+---
+- name: Updating apt cache and installing updates
+  apt:
+    update_cache: yes
+    cache_valid_time: 86400
+    upgrade: yes
+    autoremove: yes
+
+- name: Utility installation
+  apt:
+    name:
+      - curl
+      - unzip
+      - jq
+      - ufw
+    state: present
+
+
+- name: Разрешение порта панели в UFW
+  ufw:
+    rule: allow
+    port: "{{ xui_port }}"
+    proto: tcp
+    comment: "3x-ui panel port"

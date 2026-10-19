@@ -1,0 +1,46 @@
+---
+- name: Download the 3x-ui archive
+  get_url:
+    url: "https://github.com/MHSanaei/3x-ui/releases/download/{{ xui_version }}/x-ui-linux-amd64.tar.gz"
+    dest: "/tmp/x-ui-linux-amd64.tar.gz"
+    mode: '0644'
+
+- name: Unpack 3x-ui into /usr/local/
+  unarchive:
+    src: "/tmp/x-ui-linux-amd64.tar.gz"
+    dest: "/usr/local/"
+    remote_src: yes
+
+- name: Install the systemd service (for Debian/Ubuntu)
+  copy:
+    src: /usr/local/x-ui/x-ui.service.debian
+    dest: /etc/systemd/system/x-ui.service
+    remote_src: yes
+    mode: '0644'
+  notify: Restart x-ui
+
+- name: Restart the systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Initial launch of the service (to initialize the database)
+  systemd:
+    name: x-ui
+    state: started
+    enabled: yes
+
+- name: 3‑second pause for database initialization
+  pause:
+    seconds: 3
+
+- name: Configuring the panel port via CLI
+  command: /usr/local/x-ui/x-ui setting -port {{ xui_port }}
+  notify: Restart x-ui
+
+- name: Setting the username via CLI
+  command: /usr/local/x-ui/x-ui setting -username {{ xui_username }}
+  notify: Restart x-ui
+
+- name: Setting a password via CLI
+  command: /usr/local/x-ui/x-ui setting -password {{ xui_password }}
+  notify: Restart x-ui

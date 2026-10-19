@@ -1,0 +1,6 @@
+# Параметры панели 3x-ui
+---
+xui_port: 2053
+xui_username: "admin"
+xui_password: "YourStrongPassword123!"
+xui_version: "v3.10.2"

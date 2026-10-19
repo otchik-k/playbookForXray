@@ -1,0 +1,11 @@
+---
+- name: Download the Xray installation script.
+  get_url:
+    url: https://github.com/XTLS/Xray-install/raw/main/install-release.sh
+    dest: /tmp/install-release.sh
+    mode: '0755'
+
+- name: Run the Xray installation script
+  command: /tmp/install-release.sh install
+  args:
+    creates: /usr/local/bin/xray

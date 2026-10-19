@@ -1,72 +1,19 @@
-- name: Установка панели 3x-ui
+---
+- name: Server setup with Xray and the 3x-ui panel
   hosts: xray_servers
   become: yes
-  vars:
-    # Задаем параметры панели через переменные, чтобы установка была полностью автоматической
-    xui_port: 2053
-    xui_username: "admin"
-    xui_password: "YourStrongPassword123!
-
-- name: Обновление кэша apt и установка обновлений
-  apt:
-    update_cache: yes
-    cache_valid_time: 86400
-    upgrade: yes
-    autoremove: yes
-  become: yes
-
-
-- name: Установка curl и unzip
-  apt:
-    name:
-      - curl
-      - unzip
-      - jq
-      - ufw
-    state: present
-    update_cache: yes
-    cache_valid_time: 3600
-  become: yes
-
-
-- name: Безопасная установка Xray через официальный скрипт
-  hosts: xray_servers
-  become: yes
-  tasks:
-    - name: Скачать установочный скрипт Xray
-      get_url:
-        url: https://github.com/XTLS/Xray-install/raw/main/install-release.sh
-        dest: /tmp/install-release.sh
-        mode: '0755'
-
-    - name: Запустить установочный скрипт (только если Xray еще не установлен)
-      command: /tmp/install-release.sh install
-      args:
-        creates: /usr/local/bin/xray
-
-
-- name: Скачивание установочного скрипта 3x-ui
-      get_url:
-        url: https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh
-        dest: /tmp/3x-ui-install.sh
-        mode: '0755' # Делаем скрипт исполняемым
-
-    - name: Запуск установки 3x-ui (только если панель еще не установлена)
-      command: /tmp/3x-ui-install.sh
-      args:
-        # Ключевой момент идемпотентности: если этот файл существует, 
-        # Ansible пропустит задачу и не будет запускать скрипт повторно.
-        creates: /usr/local/x-ui/x-ui 
-      environment:
-        # Передаем переменные окружения, чтобы скрипт не генерировал 
-        # случайные логин/пароль, а использовал наши
-        XUI_PORT: "{{ xui_port }}"
-        XUI_USERNAME: "{{ xui_username }}"
-        XUI_PASSWORD: "{{ xui_password }}"
-
-    - name: Убедиться, что сервис x-ui включен и запущен
-      systemd:
-        name: x-ui
-        state: started
-        enabled: yes
-        daemon_reload: yes
+  
+  roles:
+    - server_prep
+    
+    # Раскомментируйте нужную роль в зависимости от ваших целей:
+    
+    # Вариант А: Только Xray-core без панели
+    # - xray_install
+    
+    # Вариант Б: Только панель 3x-ui (она сама скачает нужный Xray)
+    - 3xui_install
+    
+    # Вариант В: Оба вместе (может вызвать конфликт портов!)
+    # - xray_install
+    # - 3xui_install
